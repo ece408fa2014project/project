@@ -10,8 +10,11 @@
  */
 
 #include <iostream>
+#include <string>
 #include "easypng/png.h"
+#include "sequential/main.cpp"
 
+using namespace std;
 /*
  * Inputs:
  *  COMMAND LINE ARGUMENTS
@@ -30,6 +33,20 @@ int main(int argc, char *argv[]) {
     //begin by parsing command line arguments
     if(argc < 2 || argc > 4)
     {
-        std::cout << "Usage: " << argv[0] << " <filename> flags" << std::endl;
+        cout << "Usage: " << argv[0] << " <filename> flags" << endl;
+        cout << "flags:\n\t-v verbose mode\n\t-e edge detection only \n\t-m motion detection only" << endl;
+        return -1;
     }
+    //TODO implement reading flags later.
+
+    string filename(argv[1]);
+
+    PNG * image = new PNG;
+    if(!image->readFromFile(filename)) {
+        cout << "Error: unable to read image." << endl;
+        return -1;
+    }
+    #ifdef SEQUENTIAL
+        sequential_algorithm(image);
+    #endif //SEQUENTIAL
 }
