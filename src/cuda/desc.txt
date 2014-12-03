@@ -1,0 +1,40 @@
+Canny Edge Detection System
+
+Involves 4 kernels.
+
+1. simple convolution kernel
+    Identical to convolution we did in the previous lab. filter used was this:
+        2   4    5    4    2
+        4   9    12   9    4  \   /
+        5   12   15   12   5   \ /     1/
+        4   9    12   9    4   / \     / 115
+        2   4    5    4    2  /   \
+
+2. Gradient calculator
+    Simple convolutions but with different filters
+    Gx filter:
+        -1 0 +1
+        -2 0 +2
+        -1 0 +1
+
+    Gy filter:
+        +1 +2 +1
+        0  0  0
+        -1 -2 -1
+    
+    Value that goes into cell is |G| = |Gx| + |Gy|
+
+3. theta calculator
+    In each cell, theta = InvTan(Gy/Gx)
+    This gives us (very roughly) the "angle" of the point we're looking at.
+
+4. Direction normalizer
+    Locks direction to one of 4 directions:
+        0 degrees
+        45 degrees
+        90 degrees
+        135 degrees
+
+5. line tracer (NON-CUDA)
+    If a point is in the same "direction" as the points around it, fill it in. Otherwise, don't.
+        Tolerance: 1 step difference (i.e. 45 degrees to 90, 135 to 0, etc.)
