@@ -8,11 +8,7 @@
  * @date Modified: Summer 2012
  */
 
-#include <cstdint>
-
 #include "png.h"
-
-using std::uint8_t;
 
 inline void epng_err(string const & err)
 {
@@ -110,7 +106,7 @@ void PNG::_clamp_xy(size_t & x, size_t & y) const
 			<< "(" << i << ", " << j << ");" << endl
 			<< "            Truncating request to fit in the range [0,"
 			<< (_width - 1) << "] x [0," << (_height - 1) << "]." << endl;
-		epng_err(ss.str());  
+		epng_err(ss.str());
 	}
 }
 
@@ -311,22 +307,22 @@ bool PNG::_read_file(string const & file_name)
 			if (numchannels == 1 || numchannels == 2)
 			{
 				// monochrome
-				uint8_t color = (uint8_t) *pix++;
+				unsigned char color = (unsigned char) *pix++;
 				pixel.red = color;
 				pixel.green = color;
 				pixel.blue = color;
 				if (numchannels == 2)
-					pixel.alpha = (uint8_t) *pix++;
+					pixel.alpha = (unsigned char) *pix++;
 				else
 					pixel.alpha = 255;
-			} 
-			else if (numchannels == 3 || numchannels == 4) 
+			}
+			else if (numchannels == 3 || numchannels == 4)
 			{
-				pixel.red = (uint8_t) *pix++;
-				pixel.green = (uint8_t) *pix++;
-				pixel.blue = (uint8_t) *pix++;
+				pixel.red = (unsigned char) *pix++;
+				pixel.green = (unsigned char) *pix++;
+				pixel.blue = (unsigned char) *pix++;
 				if (numchannels == 4)
-					pixel.alpha = (uint8_t) *pix++;
+					pixel.alpha = (unsigned char) *pix++;
 				else
 					pixel.alpha = 255;
 			}
@@ -384,10 +380,10 @@ bool PNG::writeToFile(string const & file_name)
 		fclose(fp);
 		return false;
 	}
-	png_set_IHDR(png_ptr, info_ptr, _width, _height, 
+	png_set_IHDR(png_ptr, info_ptr, _width, _height,
 			8,
-			PNG_COLOR_TYPE_RGB_ALPHA, 
-			PNG_INTERLACE_NONE, 
+			PNG_COLOR_TYPE_RGB_ALPHA,
+			PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE,
 			PNG_FILTER_TYPE_BASE);
 

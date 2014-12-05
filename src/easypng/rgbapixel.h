@@ -8,10 +8,7 @@
 #ifndef RGBAPIXEL_H
 #define RGBAPIXEL_H
 
-#include <cstdint>
 #include <ostream>
-
-using std::uint8_t;
 
 /**
  * Represents a single pixel in an image.
@@ -19,10 +16,10 @@ using std::uint8_t;
 class RGBAPixel
 {
 	public:
-		uint8_t red; /**< Byte for the red component of the pixel. */
-		uint8_t green; /**< Byte for the green component of the pixel. */
-		uint8_t blue; /**< Byte for the blue component of the pixel. */
-		uint8_t alpha; /**< Byte for the alpha component of the pixel. */
+		unsigned char red; /**< Byte for the red component of the pixel. */
+		unsigned char green; /**< Byte for the green component of the pixel. */
+		unsigned char blue; /**< Byte for the blue component of the pixel. */
+		unsigned char alpha; /**< Byte for the alpha component of the pixel. */
 
         /** @cond POST_MP1 */
 
@@ -63,7 +60,7 @@ class RGBAPixel
 		 * @param green Green component for the new pixel.
 		 * @param blue Blue component for the new pixel.
 		 */
-		RGBAPixel(uint8_t red, uint8_t green, uint8_t blue);
+		RGBAPixel(unsigned char red, unsigned char green, unsigned char blue);
 
         /** @cond POST_MP1 */
 
@@ -76,9 +73,9 @@ class RGBAPixel
 		 * @param alpha Alpha component for the new pixel (controls
 		 *	transparency).
 		 */
-		RGBAPixel(uint8_t red, uint8_t green, uint8_t blue,
-				  uint8_t alpha);
-        
+		RGBAPixel(unsigned char red, unsigned char green, unsigned char blue,
+				  unsigned char alpha);
+
         /** @endcond */
 
 };
