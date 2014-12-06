@@ -13,7 +13,7 @@
 #include <string>
 #include "easypng/png.h"
 #include "sequential/sequential.cpp"
-#include "cuda/cuda.cpp"
+#include "cuda/cuda.cu"
 
 using namespace std;
 /*
@@ -52,6 +52,6 @@ int main(int argc, char *argv[]) {
     #endif //SEQUENTIAL
 
     #ifdef CUDA
-        cuda_algorithm(image);
+        cuda_edge_algorithm(image);
     #endif
 }
