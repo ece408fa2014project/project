@@ -3,7 +3,7 @@ LD=nvcc
 
 EXE=security
 
-CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c -DCUDA -DSEQUENTIAL
+CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c -DCUDA -DSEQUENTIAL -DTEST_MODE
 LD_INCLUDES=-L/usr/lib -L/usr/local/lib -I/usr/include -I/usr/local/include -I/usr/local/cuda/include -L/usr/local/cuda/lib64
 LD_LIBS=-lpng -lc++ -lcudart
 LD_FLAGS= -o $(EXE)
@@ -44,4 +44,4 @@ util:
 	mv *.o objs
 
 clean:
-	rm -rf objs $(EXE)
+	rm -rf objs $(EXE) *.png

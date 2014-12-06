@@ -1,5 +1,7 @@
 #ifndef __KERNELS
 #define __KERNELS
+
+
 #define FILTER_SIZE 5
 #define OUTPUT_TILE_SIZE 12
 #define INPUT_TILE_SIZE (OUTPUT_TILE_SIZE + FILTER_SIZE - 1)
@@ -39,23 +41,24 @@ __global__ void grayscale_kernel(float * r, float * g, float * b, float * out, i
 
 __global__ void gaussian_filter_kernel(float * in, float * out, int width, int height) {
     
-    //initialize a shared bit of memory for collaborative loading and all that shit
     __shared__ float collab[INPUT_TILE_SIZE][INPUT_TILE_SIZE];
-
-    //indices into output image
+    
+    float *N_data = in;
+    float *P_data = out;
+    
+    //these are the indices that reference the output array
     int output_x = blockIdx.x * OUTPUT_TILE_SIZE + threadIdx.x - OVERHANG;
     int output_y = blockIdx.y * OUTPUT_TILE_SIZE + threadIdx.y - OVERHANG;
 
     collab[threadIdx.y][threadIdx.x] = (output_x >= 0 && output_x < width
-                                        && output_y >= 0 && output_y < height) ? 
-                                        in[output_y * width + output_x] : 0;
-    
+                                     && output_y >= 0 && output_y < height) ? N_data[output_y * width + output_x] : 0;
+
     __syncthreads();
 
-    if((int) threadIdx.x - OVERHANG >= 0 &&
-       threadIdx.x - OVERHANG < OUTPUT_TILE_SIZE &&
-       (int) threadIdx.y - OVERHANG >= 0 &&
-       threadIdx.y - OVERHANG < OUTPUT_TILE_SIZE &&
+    if((int)threadIdx.x - OVERHANG >= 0 &&
+       (int)threadIdx.x - OVERHANG < OUTPUT_TILE_SIZE &&
+       (int)threadIdx.y - OVERHANG >= 0 &&
+       (int)threadIdx.y - OVERHANG < OUTPUT_TILE_SIZE &&
        output_x < width && output_y < height)
     {
         float accum = 0.0f;
@@ -63,11 +66,10 @@ __global__ void gaussian_filter_kernel(float * in, float * out, int width, int h
         {
             for(int j = 0; j < FILTER_SIZE; j++)
             {
-                accum += collab[threadIdx.y + i - OVERHANG][threadIdx.x + j - OVERHANG] * gauss_filter[i][j];
+                accum += collab[threadIdx.y + i - OVERHANG][threadIdx.x + j - OVERHANG] * gauss_filter[i][j]; 
             }
         }
-
-        out[output_y * width + output_x] = accum;
+        P_data[output_y * width + output_x] = accum;
     }
 }
 
