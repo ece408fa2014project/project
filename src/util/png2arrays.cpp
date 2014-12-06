@@ -14,7 +14,7 @@ void png2arrays::parse_png(const PNG * image) {
     this->g = new float[size];
     this->b = new float[size];
     for(int i = 0; i < image->height(); i++)
-        for(int j = 0; j < image->width(); i++)
+        for(int j = 0; j < image->width(); j++)
         {
             const RGBAPixel * pix = (*image)(j, i);
             r[i * image->width() + j] = (float) pix->red;
