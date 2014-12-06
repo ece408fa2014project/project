@@ -42,7 +42,9 @@ void cuda_edge_algorithm(PNG * image) {
 
     float *gray_gauss_dev;
     cudaMalloc((void**) &gray_gauss_dev, size * sizeof(float));
-    
+
+    gaussian_filter_kernel<<<dim_block_gauss, dim_grid_gauss>>>(grayscale_dev, gray_gauss_dev, image->width(), image->height());
+
     //allocate device variables for gradient calculations
     float *grad_dev;
     float *grad_x_dev;
@@ -52,7 +54,29 @@ void cuda_edge_algorithm(PNG * image) {
     cudaMalloc((void**) &grad_x_dev, size * sizeof(float));
     cudaMalloc((void**) &grad_y_dev, size * sizeof(float));
 
-    
+    dim3 dim_grid_grad(image->width()/OUTPUT_TILE_SIZE + 1,image->height()/OUTPUT_TILE_SIZE + 1, 1);
+    dim3 dim_block_grad(INPUT_TILE_SIZE_GRAD, INPUT_TILE_SIZE_GRAD, 1);
+   
+    gradient_calc_kernel<<<dim_block_grad, dim_grid_grad>>>(gray_gauss_dev, grad_x_dev, grad_y_dev, grad_dev, image->width(), image->height());
+
+    cudaFree(gray_gauss_dev);
+
+    int * theta_dev;
+
+    cudaMalloc((void**) &theta_dev, size * sizeof(int));
+    //the directions are labeled counterclockwise from theta=0
+    theta_calc_kernel<<<dim_block_gray, dim_grid_gray>>>(grad_x_dev, grad_y_dev, theta_dev, image->width(), image->height());
+
+    cudaFree(grad_x_dev);
+    cudaFree(grad_y_dev);
+
+    dim3 dim_grid_trace(image->width()/16, image->height()/16, 1);
+    dim3 dim_block_trace(18, 18, 1);
+
+    float * final_dev;
+
+    cudaMalloc((void**) &final_dev, size * sizeof(float));
+
 }
 
 #endif //__CUDA_MAIN

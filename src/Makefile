@@ -3,10 +3,10 @@ LD=nvcc
 
 EXE=security
 
-CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c -v
+CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c
 LD_INCLUDES=-L/usr/lib -L/usr/local/lib -I/usr/include -I/usr/local/include -I/usr/local/cuda/include -L/usr/local/cuda/lib64
 LD_LIBS=-lpng -lc++ -lcudart
-LD_FLAGS= -v -o $(EXE)
+LD_FLAGS= -o $(EXE)
 
 all: prep png util main
 	$(LD) $(LD_INCLUDES) $(LD_LIBS) $(wildcard objs/*.o) $(LD_FLAGS)
