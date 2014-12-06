@@ -1,9 +1,9 @@
 #include "png2arrays.h"
 
 png2arrays::~png2arrays() {
-    delete[] this->r;
-    delete[] this->g;
-    delete[] this->b;
+    //if(this->r != NULL) delete[] this->r;
+    //if(this->g != NULL) delete[] this->g;
+    //if(this->b != NULL) delete[] this->b;
 }
 
 void png2arrays::parse_png(const PNG * image) {

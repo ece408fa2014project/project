@@ -40,6 +40,21 @@ void cuda_edge_algorithm(PNG * image) {
     cudaFree(g_dev);
     cudaFree(b_dev);
 
+    float * grayscale_host = (float *)malloc(size * sizeof(float));
+
+    cudaMemcpy(grayscale_host, grayscale_dev, size * sizeof(float), cudaMemcpyDeviceToHost);
+
+    png2arrays from_grayscale;
+
+    from_grayscale.r = grayscale_host;
+    from_grayscale.g = grayscale_host;
+    from_grayscale.b = grayscale_host;
+    from_grayscale.x_dim = image->width();
+    from_grayscale.y_dim = image->height();
+
+    PNG * grayscale = from_grayscale.from_arrays();
+    grayscale->writeToFile("grayscale.png");
+
     float *gray_gauss_dev;
     cudaMalloc((void**) &gray_gauss_dev, size * sizeof(float));
 
