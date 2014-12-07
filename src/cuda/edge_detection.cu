@@ -31,14 +31,14 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
     cuda_ret = cudaDeviceSynchronize();
     if(cuda_ret != cudaSuccess)
       {
-      //  printf("%s\n", cudaGetErrorString(cuda_ret));
+        printf("%s\n", cudaGetErrorString(cuda_ret));
       }
     cudaMemcpy(b_dev, b, size * sizeof(float), cudaMemcpyHostToDevice);
 
     cuda_ret = cudaDeviceSynchronize();
     if(cuda_ret != cudaSuccess)
       {
-      //  printf("%s\n", cudaGetErrorString(cuda_ret));
+          printf("%s\n", cudaGetErrorString(cuda_ret));
       }
 
     dim3 dim_grid_gray(width / 16 + 1, height / 16 + 1, 1);
@@ -49,7 +49,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        //printf("%s\n", cudaGetErrorString(cuda_ret));
+        printf("%s\n", cudaGetErrorString(cuda_ret));
     }
     cudaFree(r_dev);
     cudaFree(g_dev);
@@ -65,7 +65,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        //printf("%s\n", cudaGetErrorString(cuda_ret));
+        printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
     cudaFree(grayscale_dev);
@@ -82,7 +82,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        //printf("%s\n", cudaGetErrorString(cuda_ret));
+        printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
 
@@ -91,16 +91,66 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 
     cudaMalloc((void**) &average_dev_1, size * sizeof(float));
     cudaMalloc((void**) &average_dev_2, size * sizeof(float));
+
+    float * prevFrame_dev;
+
+    cudaMalloc((void**)&prevFrame_dev, size * sizeof(float));
+
     if(prevFrame1 != NULL)
-        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(grad_dev, prevFrame1, average_dev_1, width, height);
+    {
+        cudaMemcpy(prevFrame_dev, prevFrame1, size * sizeof(float), cudaMemcpyHostToDevice);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(grad_dev, prevFrame_dev, average_dev_1, width, height);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+    }
     if(prevFrame2 != NULL)
-        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_1, prevFrame2, average_dev_2, width, height);
+    {
+        cudaMemcpy(prevFrame_dev, prevFrame2, size * sizeof(float), cudaMemcpyHostToDevice);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_1, prevFrame_dev, average_dev_2, width, height);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+    }
     if(prevFrame3 != NULL)
+    {
+        cudaMemcpy(prevFrame_dev, prevFrame3, size * sizeof(float), cudaMemcpyHostToDevice);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
         diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_2, prevFrame3, average_dev_1, width, height);
+	    cuda_ret = cudaDeviceSynchronize();
+	    if(cuda_ret != cudaSuccess)
+        {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+    }
 
     cudaMemcpy(out, (prevFrame3 == NULL && prevFrame2 != NULL) ? average_dev_2 : (prevFrame1 == NULL) ? grad_dev : average_dev_1, size * sizeof(float), cudaMemcpyDeviceToHost);
+	cuda_ret = cudaDeviceSynchronize();
+	if(cuda_ret != cudaSuccess)
+    {
+        printf("%s\n", cudaGetErrorString(cuda_ret));
+    }
 
     cudaFree(grad_dev);
     cudaFree(average_dev_1);
     cudaFree(average_dev_2);
+    cudaFree(prevFrame_dev);
 }
