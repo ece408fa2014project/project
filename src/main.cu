@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
     vector<vector<Point> > contours;
     namedWindow("Display");
     cap.read(cur);
+    cur.convertTo(cur, CV_32FC1);
     Size s = cur.size();
     int rows = s.height;
     int columns = s.width;
@@ -72,17 +73,17 @@ int main(int argc, char *argv[]) {
     while(1)
     {
         cap.read(cur);
-        output = cur;
+        output = cur.clone();
         split(cur,BGR_3);
         out = BGR_3[0].clone();
 
         //Call kernel
-        //do_edge_detection_cuda((float*)&BGR_3[2],(float*)&BGR_3[1],(float*)&BGR_3[0],(float*)&out,(float*)&prev1,(float*)&prev2,(float*)&prev3,columns,rows);
+        do_edge_detection_cuda((float *)BGR_3[2],(float*)BGR_3[1],(float*)BGR_3[0],(float*)out,(float*)prev1,(float*)prev2,(float*)prev3,columns,rows);
 
-        cur = out;
-        prev3 = prev2;
-        prev2 = prev1;
-        prev1 = cur;
+        cur = out.clone();
+        prev3 = prev2.clone();
+        prev2 = prev1.clone();
+        prev1 = cur.clone();
 
         imshow("Display",out);
         if(waitKey(30) >= 0) break;
