@@ -60,7 +60,9 @@ int main(int argc, char *argv[]) {
 //         cuda_edge_algorithm(image);
 //     #endif
     Mat cur, output;
-    VideoCapture cap(0);
+    VideoCapture cap(1);
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
     vector<vector<Point> > contours;
     namedWindow("Display");
     cap.read(cur);
@@ -97,23 +99,26 @@ int main(int argc, char *argv[]) {
 
         //Call kernel
         do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
-        //do_face_detection_cuda(r,g,b,out_r,out_g,out_b,columns,rows);
+        //do_face_detection_cuda(r,g,b,columns,rows);
+
+        float * temp = prev3;
+        prev3 = prev2;
+        prev2 = prev1;
+        prev1 = out;
 
         //Copy back into Mat
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
-                prev3[columns*y+x] = prev2[columns*y+x];
-                prev2[columns*y+x] = prev1[columns*y+x];
-                prev1[columns*y+x] = out[columns*y+x];
-
-                output.at<Vec3b>(y,x)[0] = out[rows*y+x];
-                output.at<Vec3b>(y,x)[1] = out[rows*y+x];
-                output.at<Vec3b>(y,x)[2] = out[rows*y+x];
-                // output.at<Vec3b>(y,x)[0] = out_b[columns*y+x];
-                // output.at<Vec3b>(y,x)[1] = out_g[columns*y+x];
-                // output.at<Vec3b>(y,x)[2] = out_r[columns*y+x];
+                output.at<Vec3b>(y,x)[0] = out[columns*y+x];
+                output.at<Vec3b>(y,x)[1] = out[columns*y+x];
+                output.at<Vec3b>(y,x)[2] = out[columns*y+x];
+                // cur.at<Vec3b>(y,x)[0] = b[columns*y+x];
+                // cur.at<Vec3b>(y,x)[1] = g[columns*y+x];
+                // cur.at<Vec3b>(y,x)[2] = r[columns*y+x];
             }
         }
+
+        out = temp;
 
         imshow("Display",output);
         if(waitKey(30) >= 0) break;

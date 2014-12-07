@@ -31,14 +31,14 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
     cuda_ret = cudaDeviceSynchronize();
     if(cuda_ret != cudaSuccess)
       {
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
       }
     cudaMemcpy(b_dev, b, size * sizeof(float), cudaMemcpyHostToDevice);
 
     cuda_ret = cudaDeviceSynchronize();
     if(cuda_ret != cudaSuccess)
       {
-          printf("%s\n", cudaGetErrorString(cuda_ret));
+          //printf("%s\n", cudaGetErrorString(cuda_ret));
       }
 
     dim3 dim_grid_gray(width / 16 + 1, height / 16 + 1, 1);
@@ -49,7 +49,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
     cudaFree(r_dev);
     cudaFree(g_dev);
@@ -65,7 +65,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
     cudaFree(grayscale_dev);
@@ -82,7 +82,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
 
@@ -102,13 +102,13 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
         diff_kernel<<<dim_grid_gray, dim_block_gray>>>(grad_dev, prevFrame_dev, average_dev_1, width, height);
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
     }
     if(prevFrame2 != NULL)
@@ -117,13 +117,13 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
         diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_1, prevFrame_dev, average_dev_2, width, height);
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
     }
     if(prevFrame3 != NULL)
@@ -132,13 +132,13 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
-        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_2, prevFrame3, average_dev_1, width, height);
+        diff_kernel<<<dim_grid_gray, dim_block_gray>>>(average_dev_2, prevFrame_dev, average_dev_1, width, height);
 	    cuda_ret = cudaDeviceSynchronize();
 	    if(cuda_ret != cudaSuccess)
         {
-            printf("%s\n", cudaGetErrorString(cuda_ret));
+            //printf("%s\n", cudaGetErrorString(cuda_ret));
         }
     }
 
@@ -146,7 +146,7 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 	cuda_ret = cudaDeviceSynchronize();
 	if(cuda_ret != cudaSuccess)
     {
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
     cudaFree(grad_dev);
