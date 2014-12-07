@@ -17,6 +17,7 @@
 #include "easypng/png.h"
 #include "sequential/sequential.cpp"
 #include "cuda/edge_detection.cu"
+#include "cuda/face_detection.cu"
 
 using namespace std;
 using namespace cv;
@@ -66,44 +67,55 @@ int main(int argc, char *argv[]) {
     Size s = cur.size();
     int rows = s.height;
     int columns = s.width;
-    // float r[rows*columns];
-    // float g[rows*columns];
-    // float b[rows*columns];
-    // float prev1[rows*columns];
-    // float prev2[rows*columns];
-    // float prev3[rows*columns];
-    // float out[rows*columns];
+    int size = rows * columns;
+    float * r = (float*)malloc(size*sizeof(float));
+    float * g = (float*)malloc(size*sizeof(float));
+    float * b = (float*)malloc(size*sizeof(float));
+    float * out_r = (float*)malloc(size*sizeof(float));
+    float * out_g = (float*)malloc(size*sizeof(float));
+    float * out_b = (float*)malloc(size*sizeof(float));
+    float * prev1 = (float*)malloc(size*sizeof(float));
+    float * prev2 = (float*)malloc(size*sizeof(float));
+    float * prev3 = (float*)malloc(size*sizeof(float));
+    float * out = (float*)malloc(size*sizeof(float));
 
     while(1)
     {
         cap.read(cur);
         output = cur.clone();
 
-        // for(int y = 0; y < rows; y++){
-        //     for(int x = 0; x < columns; x++){
-        //         b[rows*y+x] = cur.at<Vec3b>(y,x)[0];
-        //         g[rows*y+x] = cur.at<Vec3b>(y,x)[1];
-        //         r[rows*y+x] = cur.at<Vec3b>(y,x)[2];
-        //     }
-        // }
-        //
-        // //Call kernel
-        // //do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
-        //
-        // //Copy back into Mat
-        // for(int y = 0; y < rows; y++){
-        //     for(int x = 0; x < columns; x++){
-        //         prev3[rows*y+x] = prev2[rows*y+x];
-        //         prev2[rows*y+x] = prev1[rows*y+x];
-        //         prev1[rows*y+x] = out[rows*y+x];
-        //
-        //         cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
-        //         cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
-        //         cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
-        //     }
-        // }
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                b[columns*y+x] = cur.at<Vec3b>(y,x)[0];
+                g[columns*y+x] = cur.at<Vec3b>(y,x)[1];
+                r[columns*y+x] = cur.at<Vec3b>(y,x)[2];
+                out_b[columns*y+x] = cur.at<Vec3b>(y,x)[0];
+                out_g[columns*y+x] = cur.at<Vec3b>(y,x)[1];
+                out_r[columns*y+x] = cur.at<Vec3b>(y,x)[2];
+            }
+        }
 
-        imshow("Display",cur);
+        //Call kernel
+        //do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
+        do_face_detection_cuda(r,g,b,out_r,out_g,out_b,columns,rows);
+
+        //Copy back into Mat
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                prev3[columns*y+x] = prev2[columns*y+x];
+                prev2[columns*y+x] = prev1[columns*y+x];
+                prev1[columns*y+x] = out[columns*y+x];
+
+                cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
+                cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
+                cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
+                output.at<Vec3b>(y,x)[0] = out_b[columns*y+x];
+                output.at<Vec3b>(y,x)[1] = out_g[columns*y+x];
+                output.at<Vec3b>(y,x)[2] = out_r[columns*y+x];
+            }
+        }
+
+        imshow("Display",output);
         if(waitKey(30) >= 0) break;
     }
 
