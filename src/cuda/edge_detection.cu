@@ -12,16 +12,34 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
     cudaMalloc((void**) &r_dev, size * sizeof(float));
     cudaMalloc((void**) &g_dev, size * sizeof(float));
     cudaMalloc((void**) &b_dev, size * sizeof(float));
- 
+
     //allocate device output arrays
     float *grayscale_dev;
- 
+
     cudaMalloc((void**) &grayscale_dev, size * sizeof(float));
- 
+
     //copy input to device
     cudaMemcpy(r_dev, r, size * sizeof(float), cudaMemcpyHostToDevice);
+
+    cuda_ret = cudaDeviceSynchronize();
+    if(cuda_ret != cudaSuccess)
+      {
+        printf("%s\n", cudaGetErrorString(cuda_ret));
+      }
     cudaMemcpy(g_dev, g, size * sizeof(float), cudaMemcpyHostToDevice);
+
+    cuda_ret = cudaDeviceSynchronize();
+    if(cuda_ret != cudaSuccess)
+      {
+      //  printf("%s\n", cudaGetErrorString(cuda_ret));
+      }
     cudaMemcpy(b_dev, b, size * sizeof(float), cudaMemcpyHostToDevice);
+
+    cuda_ret = cudaDeviceSynchronize();
+    if(cuda_ret != cudaSuccess)
+      {
+      //  printf("%s\n", cudaGetErrorString(cuda_ret));
+      }
 
     dim3 dim_grid_gray(width / 16 + 1, height / 16 + 1, 1);
     dim3 dim_block_gray(16, 16, 1);
@@ -29,9 +47,9 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
     grayscale_kernel<<<dim_grid_gray, dim_block_gray>>>(r_dev, g_dev, b_dev, grayscale_dev, width, height);
 
 	cuda_ret = cudaDeviceSynchronize();
-	if(cuda_ret != cudaSuccess) 
-    {   
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+	if(cuda_ret != cudaSuccess)
+    {
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
     cudaFree(r_dev);
     cudaFree(g_dev);
@@ -45,9 +63,9 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
     gaussian_filter_kernel<<<dim_grid_gauss, dim_block_gauss>>>(grayscale_dev, gray_gauss_dev, width, height);
 
 	cuda_ret = cudaDeviceSynchronize();
-	if(cuda_ret != cudaSuccess) 
-    {   
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+	if(cuda_ret != cudaSuccess)
+    {
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
     cudaFree(grayscale_dev);
@@ -58,13 +76,13 @@ void do_edge_detection_cuda(float * r, float * g, float * b, float * out, float 
 
     dim3 dim_grid_grad(width/OUTPUT_TILE_SIZE + 1,height/OUTPUT_TILE_SIZE + 1, 1);
     dim3 dim_block_grad(INPUT_TILE_SIZE_GRAD, INPUT_TILE_SIZE_GRAD, 1);
-   
+
     gradient_calc_kernel<<<dim_grid_grad, dim_block_grad>>>(gray_gauss_dev, grad_dev, width, height);
 
 	cuda_ret = cudaDeviceSynchronize();
-	if(cuda_ret != cudaSuccess) 
-    {   
-        printf("%s\n", cudaGetErrorString(cuda_ret));
+	if(cuda_ret != cudaSuccess)
+    {
+        //printf("%s\n", cudaGetErrorString(cuda_ret));
     }
 
 

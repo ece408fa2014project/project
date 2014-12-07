@@ -89,15 +89,15 @@ int main(int argc, char *argv[]) {
                 b[columns*y+x] = cur.at<Vec3b>(y,x)[0];
                 g[columns*y+x] = cur.at<Vec3b>(y,x)[1];
                 r[columns*y+x] = cur.at<Vec3b>(y,x)[2];
-                out_b[columns*y+x] = cur.at<Vec3b>(y,x)[0];
-                out_g[columns*y+x] = cur.at<Vec3b>(y,x)[1];
-                out_r[columns*y+x] = cur.at<Vec3b>(y,x)[2];
+                // out_b[columns*y+x] = cur.at<Vec3b>(y,x)[0];
+                // out_g[columns*y+x] = cur.at<Vec3b>(y,x)[1];
+                // out_r[columns*y+x] = cur.at<Vec3b>(y,x)[2];
             }
         }
 
         //Call kernel
-        //do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
-        do_face_detection_cuda(r,g,b,out_r,out_g,out_b,columns,rows);
+        do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
+        //do_face_detection_cuda(r,g,b,out_r,out_g,out_b,columns,rows);
 
         //Copy back into Mat
         for(int y = 0; y < rows; y++){
@@ -106,12 +106,12 @@ int main(int argc, char *argv[]) {
                 prev2[columns*y+x] = prev1[columns*y+x];
                 prev1[columns*y+x] = out[columns*y+x];
 
-                cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
-                cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
-                cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
-                output.at<Vec3b>(y,x)[0] = out_b[columns*y+x];
-                output.at<Vec3b>(y,x)[1] = out_g[columns*y+x];
-                output.at<Vec3b>(y,x)[2] = out_r[columns*y+x];
+                output.at<Vec3b>(y,x)[0] = out[rows*y+x];
+                output.at<Vec3b>(y,x)[1] = out[rows*y+x];
+                output.at<Vec3b>(y,x)[2] = out[rows*y+x];
+                // output.at<Vec3b>(y,x)[0] = out_b[columns*y+x];
+                // output.at<Vec3b>(y,x)[1] = out_g[columns*y+x];
+                // output.at<Vec3b>(y,x)[2] = out_r[columns*y+x];
             }
         }
 
