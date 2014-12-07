@@ -58,34 +58,52 @@ int main(int argc, char *argv[]) {
 //     #ifdef CUDA
 //         cuda_edge_algorithm(image);
 //     #endif
-    Mat cur, prev1, prev2, prev3, output;
-    Mat BGR_3[3];
+    Mat cur, output;
     VideoCapture cap(0);
     vector<vector<Point> > contours;
     namedWindow("Display");
     cap.read(cur);
-    cur.convertTo(cur, CV_32FC1);
     Size s = cur.size();
     int rows = s.height;
     int columns = s.width;
-    Mat out;
+    float r[rows*columns];
+    float g[rows*columns];
+    float b[rows*columns];
+    float prev1[rows*columns];
+    float prev2[rows*columns];
+    float prev3[rows*columns];
+    float out[rows*columns];
 
     while(1)
     {
         cap.read(cur);
         output = cur.clone();
-        split(cur,BGR_3);
-        out = BGR_3[0].clone();
+
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                b[rows*y+x] = cur.at<Vec3b>(y,x)[0];
+                g[rows*y+x] = cur.at<Vec3b>(y,x)[1];
+                r[rows*y+x] = cur.at<Vec3b>(y,x)[2];
+            }
+        }
 
         //Call kernel
-        do_edge_detection_cuda((float *)BGR_3[2],(float*)BGR_3[1],(float*)BGR_3[0],(float*)out,(float*)prev1,(float*)prev2,(float*)prev3,columns,rows);
+        do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
 
-        cur = out.clone();
-        prev3 = prev2.clone();
-        prev2 = prev1.clone();
-        prev1 = cur.clone();
+        //Copy back into Mat
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                prev3[rows*y+x] = prev2[rows*y+x];
+                prev2[rows*y+x] = prev1[rows*y+x];
+                prev1[rows*y+x] = out[rows*y+x];
 
-        imshow("Display",out);
+                cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
+                cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
+                cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
+            }
+        }
+
+        imshow("Display",cur);
         if(waitKey(30) >= 0) break;
     }
 
