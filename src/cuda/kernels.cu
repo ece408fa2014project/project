@@ -13,11 +13,11 @@
 #define OVERHANG_GRAD ((INPUT_TILE_SIZE_GRAD - OUTPUT_TILE_SIZE) / 2)
 
 __constant__ float gauss_filter[FILTER_SIZE][FILTER_SIZE] =
-{{2/115, 4/115, 5/115, 4/115, 2/115},
- {4/115, 9/115, 12/115, 9/115, 4/115},
- {5/115, 12/115, 15/115, 12/115, 5/115},
- {4/115, 9/115, 12/115, 9/115, 4/115},
- {2/115, 4/115, 5/115, 4/115, 2/115}};
+{{(float)2/159, (float)4/159,  (float)5/159,  (float)4/159,  (float)2/159},
+ {(float)4/159, (float)9/159,  (float)12/159, (float)9/159,  (float)4/159},
+ {(float)5/159, (float)12/159, (float)15/159, (float)12/159, (float)5/159},
+ {(float)4/159, (float)9/159,  (float)12/159, (float)9/159,  (float)4/159},
+ {(float)2/159, (float)4/159,  (float)5/159,  (float)4/159,  (float)2/159}};
 
 __constant__ float Gx_filter[FILTER_SIZE_GRAD][FILTER_SIZE_GRAD] = 
 {{-1, 0, 1},
@@ -73,42 +73,42 @@ __global__ void gaussian_filter_kernel(float * in, float * out, int width, int h
     }
 }
 
-__global__ void gradient_calc_kernel(float * in, float * Gx, float * Gy, float * G, int width, int height) {
-    //initialize an area of shared memeory
-    __shared__ float collab[INPUT_TILE_SIZE_GRAD][INPUT_TILE_SIZE_GRAD];
+__global__ void gradient_calc_kernel(float * in, float * G, int width, int height) {
 
+    __shared__ float collab[INPUT_TILE_SIZE_GRAD][INPUT_TILE_SIZE_GRAD];
+    
+    float *N_data = in;
+    float *P_data = G;
+    
+    //these are the indices that reference the output array
     int output_x = blockIdx.x * OUTPUT_TILE_SIZE + threadIdx.x - OVERHANG_GRAD;
     int output_y = blockIdx.y * OUTPUT_TILE_SIZE + threadIdx.y - OVERHANG_GRAD;
 
     collab[threadIdx.y][threadIdx.x] = (output_x >= 0 && output_x < width
-                                        && output_y >= 0 && output_y < height) ?
-                                        in[output_y * width + output_x] : 0;
+                                     && output_y >= 0 && output_y < height) ? N_data[output_y * width + output_x] : 0;
 
     __syncthreads();
 
     if((int)threadIdx.x - OVERHANG_GRAD >= 0 &&
-        threadIdx.x - OVERHANG_GRAD < OUTPUT_TILE_SIZE &&
-        (int)threadIdx.y - OVERHANG_GRAD >= 0 &&
-        threadIdx.y - OVERHANG < OUTPUT_TILE_SIZE &&
-        output_x < width && output_y < height)
+       (int)threadIdx.x - OVERHANG_GRAD < OUTPUT_TILE_SIZE &&
+       (int)threadIdx.y - OVERHANG_GRAD >= 0 &&
+       (int)threadIdx.y - OVERHANG_GRAD < OUTPUT_TILE_SIZE &&
+       output_x < width && output_y < height)
     {
         float accumX = 0.0f;
         float accumY = 0.0f;
-
         for(int i = 0; i < FILTER_SIZE_GRAD; i++)
         {
             for(int j = 0; j < FILTER_SIZE_GRAD; j++)
             {
-                accumX += collab[threadIdx.x + i - OVERHANG_GRAD][threadIdx.x + j - OVERHANG_GRAD] * Gx_filter[i][j];
-                accumY += collab[threadIdx.x + i - OVERHANG_GRAD][threadIdx.x + j - OVERHANG_GRAD] * Gy_filter[i][j];
+                accumX += collab[threadIdx.y + i - OVERHANG_GRAD][threadIdx.x + j - OVERHANG_GRAD] * Gx_filter[i][j]; 
+                accumY += collab[threadIdx.y + i - OVERHANG_GRAD][threadIdx.x + j - OVERHANG_GRAD] * Gy_filter[i][j]; 
             }
         }
-        
-        Gx[output_y * width + output_x] = accumX;
-        Gy[output_y * width + output_x] = accumY;
-        G[output_y * width + output_x] = abs(accumX) + abs(accumY);
+        P_data[output_y * width + output_x] = abs(accumX) + abs(accumY);
+        if(P_data[output_y * width + output_x] >= 255)
+            P_data[output_y * width + output_x] = 255;
     }
-
 }
 
 __global__ void theta_calc_kernel(float * gradX, float * gradY, int * out, int width, int height) {
@@ -138,4 +138,16 @@ __global__ void theta_calc_kernel(float * gradX, float * gradY, int * out, int w
             out[y * width + x] = 7;
     }
 }
+
+__global__ void diff_kernel(float *orig, float *comp, float *out, int width, int height)
+{
+    int x = blockIdx.x * blockDim.x + threadIdx.x;
+    int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+    if(x < width && y < height)
+    {
+        out[y * width + x] = abs(orig[y * width + x] - comp[y * width + x]);
+    }
+}
+
 #endif //__KERNELS

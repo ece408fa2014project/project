@@ -6,8 +6,6 @@
  *cr
  ******************************************************************************/
 
-#define OVERHANG ((INPUT_TILE_SIZE - OUTPUT_TILE_SIZE) / 2)
-
 __constant__ float M_c[FILTER_SIZE][FILTER_SIZE];
 
 __global__ void convolution(Matrix N, Matrix P) {
@@ -19,42 +17,47 @@ __global__ void convolution(Matrix N, Matrix P) {
      * Write the compute values to the output image at the correct indexes  *
      * Use OUTPUT_TILE_SIZE and INPUT_TILE_SIZE defined in support.h        *
 	 ************************************************************************/
-    //The definition of the OVERHANG constant above is to help with the repositioning
-    //of the M matrix in space.
 
     //INSERT KERNEL CODE HERE
-    __shared__ float collab[INPUT_TILE_SIZE][INPUT_TILE_SIZE];
-    
-    int width = N.width;
-    int height = N.height; 
-    
-    float *N_data = N.elements;
-    float *P_data = P.elements;
-    
-    //these are the indices that reference the output array
-    int output_x = blockIdx.x * OUTPUT_TILE_SIZE + threadIdx.x - OVERHANG;
-    int output_y = blockIdx.y * OUTPUT_TILE_SIZE + threadIdx.y - OVERHANG;
 
-    collab[threadIdx.y][threadIdx.x] = (output_x >= 0 && output_x < width
-                                     && output_y >= 0 && output_y < height) ? N_data[output_y * width + output_x] : 0;
+    __shared__ float N_ds[INPUT_TILE_SIZE][INPUT_TILE_SIZE];
+   int i,j;
+   int tx = threadIdx.x;
+   int ty = threadIdx.y;
+   int row_o = blockIdx.y * OUTPUT_TILE_SIZE + ty;
+   int col_o = blockIdx.x * OUTPUT_TILE_SIZE + tx;
 
-    __syncthreads();
+   int row_i = row_o - (FILTER_SIZE-1)/2;
+   int col_i = col_o - (FILTER_SIZE-1)/2;
+   
+   float output = 0.0f;
 
-    if(threadIdx.x - OVERHANG >= 0 &&
-       threadIdx.x - OVERHANG < OUTPUT_TILE_SIZE &&
-       threadIdx.y - OVERHANG >= 0 &&
-       threadIdx.y - OVERHANG < OUTPUT_TILE_SIZE &&
-       output_x < width && output_y < height)
-    {
-        float accum = 0.0f;
-        for(int i = 0; i < FILTER_SIZE; i++)
-        {
-            for(int j = 0; j < FILTER_SIZE; j++)
-            {
-                accum += collab[threadIdx.y + i - OVERHANG][threadIdx.x + j - OVERHANG] * M_c[i][j]; 
-            }
-        }
-        P_data[output_y * width + output_x] = accum;
+   if((row_i >=0) && (row_i < N.height) && (col_i >= 0) && (col_i < N.width))
+   {
+	N_ds[ty][tx] = N.elements[row_i * N.width + col_i];
+   }
+   else
+   {
+	N_ds[ty][tx] = 0.0f;
+   }
+    
+   if(ty < OUTPUT_TILE_SIZE && tx < OUTPUT_TILE_SIZE)
+   {
+	for(i = 0; i < FILTER_SIZE; i++)
+	{
+	    for(j = 0; j < FILTER_SIZE; j++)
+	    {
+		output += M_c[i][j] * N_ds[i+ty][j+tx];
+		__syncthreads();
+	    }
+
+   	}
     }
+
+   if(row_o < P.height && col_o < P.width && ty < OUTPUT_TILE_SIZE && tx < OUTPUT_TILE_SIZE )
+   {
+	P.elements[row_o * P.width + col_o] = output;
+   }
+
 }
 

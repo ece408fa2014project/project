@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 	Matrix N_d, P_d;
 	unsigned imageHeight, imageWidth;
 	cudaError_t cuda_ret;
+	//dim3 dim_grid, dim_block;
 
 	/* Read image dimensions */
     if (argc == 1) {
@@ -51,7 +52,7 @@ int main(int argc, char* argv[])
 	M_h = allocateMatrix(FILTER_SIZE, FILTER_SIZE);
 	N_h = allocateMatrix(imageHeight, imageWidth);
 	P_h = allocateMatrix(imageHeight, imageWidth);
-    
+
 	/* Initialize filter and images */
 	initMatrix(M_h);
 	initMatrix(N_h);
@@ -81,7 +82,8 @@ int main(int argc, char* argv[])
 
 	/* Copy mask to device constant memory */
     // INSERT CODE HERE
-    cudaMemcpyToSymbol("M_c", M_h.elements, FILTER_SIZE * FILTER_SIZE * sizeof(float), 0, cudaMemcpyHostToDevice);
+
+    cudaMemcpyToSymbol(M_c, M_h.elements, FILTER_SIZE*FILTER_SIZE*sizeof(float));
 
 
     cudaDeviceSynchronize();
@@ -93,17 +95,17 @@ int main(int argc, char* argv[])
 
     // INSERT CODE HERE
     // Use OUTPUT_TILE_SIZE and INPUT_TILE_SIZE defined in support.h
-        dim3 dim_grid(imageWidth/OUTPUT_TILE_SIZE + 1,imageHeight/OUTPUT_TILE_SIZE + 1, 1);
-        dim3 dim_block(INPUT_TILE_SIZE, INPUT_TILE_SIZE, 1);
 
+    int BLOCK_SIZE = INPUT_TILE_SIZE;
+    dim3 dim_block(BLOCK_SIZE, BLOCK_SIZE, 1);
+    dim3 dim_grid(((unsigned int) ceil(N_d.width/(float)OUTPUT_TILE_SIZE)),
+		  ((unsigned int) ceil(N_d.height/(float)OUTPUT_TILE_SIZE)),
+		  1);
+    
 	convolution<<<dim_grid, dim_block>>>(N_d, P_d);
 
 	cuda_ret = cudaDeviceSynchronize();
-	if(cuda_ret != cudaSuccess) 
-        {   
-            printf("%s\n", cudaGetErrorString(cuda_ret));
-            FATAL("Unable to launch/execute kernel");
-        }
+	if(cuda_ret != cudaSuccess) FATAL("Unable to launch/execute kernel");
 
     cudaDeviceSynchronize();
     stopTime(&timer); printf("%f s\n", elapsedTime(timer));
