@@ -146,7 +146,7 @@ __global__ void diff_kernel(float *orig, float *comp, float *out, int width, int
 
     if(x < width && y < height)
     {
-        out[y * width + x] = abs(orig[y * width + x] - comp[y * width + x] / 3);
+        out[y * width + x] = abs(orig[y * width + x] - comp[y * width + x]/3);
     }
 }
 

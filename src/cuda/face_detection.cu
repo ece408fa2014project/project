@@ -9,13 +9,18 @@ void do_face_detection_cuda(float * r, float * g, float * b, int width, int heig
     int size = width * height;
     cudaError_t cuda_ret;
     //allocate the device input arrays
-    float *r_dev;
-    float *g_dev;
-    float *b_dev;
+    float *r_dev, *r_gauss_dev;
+    float *g_dev, *g_gauss_dev;
+    float *b_dev, *b_gauss_dev;
 
     cudaMalloc((void**) &r_dev, size * sizeof(float));
     cudaMalloc((void**) &g_dev, size * sizeof(float));
     cudaMalloc((void**) &b_dev, size * sizeof(float));
+
+    cudaMalloc((void**) &r_gauss_dev, size * sizeof(float));
+    cudaMalloc((void**) &g_gauss_dev, size * sizeof(float));
+    cudaMalloc((void**) &b_gauss_dev, size * sizeof(float));
+
 
     //allocate device output arrays
     float *grayscale_dev_1;
@@ -44,9 +49,40 @@ void do_face_detection_cuda(float * r, float * g, float * b, int width, int heig
 
 
     //copy input to device
-    cudaMemcpy(r_dev, r, size * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(g_dev, g, size * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(b_dev, b, size * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(r_gauss_dev, r, size * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(g_gauss_dev, g, size * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(b_gauss_dev, b, size * sizeof(float), cudaMemcpyHostToDevice);
+
+    dim3 dim_grid_gauss(width/12 + 1,height/12 + 1, 1);
+    dim3 dim_block_gauss(16, 16, 1);
+
+    gaussian_filter_kernel<<<dim_grid_gauss, dim_block_gauss>>>(r_gauss_dev, r_dev, width, height);
+
+    cuda_ret = cudaDeviceSynchronize();
+    if(cuda_ret != cudaSuccess)
+      {
+        printf("%s\n", cudaGetErrorString(cuda_ret));
+      }
+
+      gaussian_filter_kernel<<<dim_grid_gauss, dim_block_gauss>>>(g_gauss_dev, g_dev, width, height);
+
+      cuda_ret = cudaDeviceSynchronize();
+      if(cuda_ret != cudaSuccess)
+        {
+          printf("%s\n", cudaGetErrorString(cuda_ret));
+        }
+
+        gaussian_filter_kernel<<<dim_grid_gauss, dim_block_gauss>>>(b_gauss_dev, b_dev, width, height);
+
+        cuda_ret = cudaDeviceSynchronize();
+        if(cuda_ret != cudaSuccess)
+          {
+            printf("%s\n", cudaGetErrorString(cuda_ret));
+          }
+
+    cudaFree(r_gauss_dev);
+    cudaFree(g_gauss_dev);
+    cudaFree(b_gauss_dev);
 
     dim3 dim_grid_gray(width / 16 + 1, height / 16 + 1, 1);
     dim3 dim_block_gray(16, 16, 1);
