@@ -66,42 +66,42 @@ int main(int argc, char *argv[]) {
     Size s = cur.size();
     int rows = s.height;
     int columns = s.width;
-    float r[rows*columns];
-    float g[rows*columns];
-    float b[rows*columns];
-    float prev1[rows*columns];
-    float prev2[rows*columns];
-    float prev3[rows*columns];
-    float out[rows*columns];
+    // float r[rows*columns];
+    // float g[rows*columns];
+    // float b[rows*columns];
+    // float prev1[rows*columns];
+    // float prev2[rows*columns];
+    // float prev3[rows*columns];
+    // float out[rows*columns];
 
     while(1)
     {
         cap.read(cur);
         output = cur.clone();
 
-        for(int y = 0; y < rows; y++){
-            for(int x = 0; x < columns; x++){
-                b[rows*y+x] = cur.at<Vec3b>(y,x)[0];
-                g[rows*y+x] = cur.at<Vec3b>(y,x)[1];
-                r[rows*y+x] = cur.at<Vec3b>(y,x)[2];
-            }
-        }
-
-        //Call kernel
-        do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
-
-        //Copy back into Mat
-        for(int y = 0; y < rows; y++){
-            for(int x = 0; x < columns; x++){
-                prev3[rows*y+x] = prev2[rows*y+x];
-                prev2[rows*y+x] = prev1[rows*y+x];
-                prev1[rows*y+x] = out[rows*y+x];
-
-                cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
-                cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
-                cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
-            }
-        }
+        // for(int y = 0; y < rows; y++){
+        //     for(int x = 0; x < columns; x++){
+        //         b[rows*y+x] = cur.at<Vec3b>(y,x)[0];
+        //         g[rows*y+x] = cur.at<Vec3b>(y,x)[1];
+        //         r[rows*y+x] = cur.at<Vec3b>(y,x)[2];
+        //     }
+        // }
+        //
+        // //Call kernel
+        // //do_edge_detection_cuda(r,g,b,out,prev1,prev2,prev3,columns,rows);
+        //
+        // //Copy back into Mat
+        // for(int y = 0; y < rows; y++){
+        //     for(int x = 0; x < columns; x++){
+        //         prev3[rows*y+x] = prev2[rows*y+x];
+        //         prev2[rows*y+x] = prev1[rows*y+x];
+        //         prev1[rows*y+x] = out[rows*y+x];
+        //
+        //         cur.at<Vec3b>(y,x)[0] = out[rows*y+x];
+        //         cur.at<Vec3b>(y,x)[1] = out[rows*y+x];
+        //         cur.at<Vec3b>(y,x)[2] = out[rows*y+x];
+        //     }
+        // }
 
         imshow("Display",cur);
         if(waitKey(30) >= 0) break;

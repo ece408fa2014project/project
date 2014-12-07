@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
       dilate(fore,fore,Mat());
       findContours(fore,contours,CV_RETR_EXTERNAL,CV_CHAIN_APPROX_NONE);
       drawContours(frame,contours,-1,Scalar(0,0,255),2);
-      imshow("Frame",BGR_3[1]);
+      imshow("Frame",frame);
       if(waitKey(30) >= 0) break;
     }
     return 0;
