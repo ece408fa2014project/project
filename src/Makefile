@@ -3,9 +3,9 @@ LD=nvcc
 
 EXE=security
 
-CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c -DCUDA -DSEQUENTIAL -DTEST_MODE
+CXX_FLAGS= -I/usr/local/cuda/include -lcudart -g -c -DCUDA -DSEQUENTIAL -DTEST_MODE `pkg-config --clfags opencv`
 LD_INCLUDES=-L/usr/lib -L/usr/local/lib -I/usr/include -I/usr/local/include -I/usr/local/cuda/include -L/usr/local/cuda/lib64
-LD_LIBS=-lpng -lc++ -lcudart
+LD_LIBS=-lpng -lc++ -lcudart `pkg-config --libs opencv`
 LD_FLAGS= -o $(EXE)
 
 all: prep png util main
@@ -38,7 +38,7 @@ cuda:
 	$(CXX) $(CXX_FLAGS) $(wildcard cuda/*.cpp) $(wildcard cuda/*.cu)
 	mv *.o objs
 
-util: 
+util:
 	echo "util"
 	$(CXX) $(CXX_FLAGS) $(wildcard util/*.cpp)
 	mv *.o objs

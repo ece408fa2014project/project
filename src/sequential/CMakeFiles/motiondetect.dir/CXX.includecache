@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/christian/School/ece408/final_project/src/sequential/motiondetect.cpp
+opencv2/opencv.hpp
+/home/christian/School/ece408/final_project/src/sequential/opencv2/opencv.hpp
+iostream
+-
+vector
+-
+opencv2/highgui/highgui.hpp
+/home/christian/School/ece408/final_project/src/sequential/opencv2/highgui/highgui.hpp
+
