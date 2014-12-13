@@ -1,1 +1,0 @@
-/home/christian/School/ece408/final_project/src/sequential/CMakeFiles/motiondetect.dir
