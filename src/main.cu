@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 //     #endif
     Mat cur, output, cur_grey;
     Mat BGR_3[3];
-    VideoCapture cap(1);
+    VideoCapture cap(0);
     cap.set(CV_CAP_PROP_FRAME_WIDTH, 320);
     cap.set(CV_CAP_PROP_FRAME_HEIGHT, 240);
     vector<vector<Point> > contours;
